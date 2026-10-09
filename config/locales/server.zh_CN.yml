@@ -1,0 +1,10 @@
+zh_CN:
+  site_settings:
+    isbf_marketplace_enabled: "启用工作台商城。"
+    isbf_marketplace_publishing_enabled: "允许发布新商品和上传商品图片。"
+    isbf_marketplace_category_id: "原生商品分类的真实 ID（仅登录用户可阅读）。"
+    isbf_marketplace_storage_limit_mb: "商城私有图片容量，含原图及缩略图（MiB）。"
+  isbf_marketplace:
+    invalid_price: "请输入非负人民币金额，最多两位小数。"
+    private_images_only: "商品图片必须通过商城私有上传，不支持公共附件或外链图片。"
+    invalid: "商品信息无效，或当前账号没有发布权限。"

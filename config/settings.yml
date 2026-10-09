@@ -1,0 +1,13 @@
+plugins:
+  isbf_marketplace_enabled:
+    default: true
+    client: true
+  isbf_marketplace_publishing_enabled:
+    default: true
+  isbf_marketplace_category_id:
+    default: 0
+    min: 0
+  isbf_marketplace_storage_limit_mb:
+    default: 512
+    min: 0
+    max: 2048
