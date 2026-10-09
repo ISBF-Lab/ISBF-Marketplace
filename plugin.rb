@@ -21,7 +21,11 @@ after_initialize do
     add_preloaded_topic_list_custom_field(field)
     add_permitted_post_create_param(field.to_sym, :string)
     NewPostManager.add_plugin_payload_attribute(field.to_sym)
-    add_permitted_post_update_param(field.to_sym)
+    add_permitted_post_update_param(field.to_sym) do |post, value|
+      if !value.nil? && (!post.is_first_post? || !IsbfMarketplace.product?(post.topic))
+        raise Discourse::InvalidParameters.new("isbf_marketplace")
+      end
+    end
     PostRevisor.track_topic_field(field.to_sym) do |changes, value|
       next if value.nil?
       raise Discourse::InvalidAccess unless IsbfMarketplace.product?(changes.topic)

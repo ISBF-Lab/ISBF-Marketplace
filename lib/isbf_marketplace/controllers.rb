@@ -10,6 +10,7 @@ module IsbfMarketplace
     wrap_parameters false
     requires_login
     requires_plugin "isbf-marketplace"
+    skip_before_action :check_xhr, only: :image
 
     def page
       category = Category.find_by(id: IsbfMarketplace.category_id)

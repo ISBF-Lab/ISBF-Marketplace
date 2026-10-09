@@ -204,7 +204,7 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     post "/posts.json", params: payload
     expect(response.status).to eq(403), response.body
     ["/isbf/marketplace/images/#{id}", "/isbf/marketplace/images/#{id}/thumbnail"].each do |path|
-      get path
+      get path, headers: { "HTTP_ACCEPT" => "application/json" }
       expect(response.status).to eq(403), response.body
     end
   end
@@ -304,7 +304,7 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
       id = private_image
       reviewable = queue_product(id)
       group = Fabricate(:group)
-      reviewer = Fabricate(:user, groups: [group])
+      reviewer = Fabricate(:user, groups: [group], refresh_auto_groups: true)
       SiteSetting.enable_category_group_moderation = true
       Fabricate(:category_moderation_group, category: category, group: group)
       expect(Reviewable.viewable_by(reviewer, preload: false)).to exist(id: reviewable.id)
@@ -419,6 +419,7 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     end
 
     it "keeps product search and author activity available when home display is disabled" do
+      UserActionManager.enable
       first = nil
       SearchIndexer.with_indexing do
         submit(title: "Marketplace unique searchable bicycle")
