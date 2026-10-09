@@ -54,6 +54,10 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     Post.find(response.parsed_body.fetch("id"))
   end
 
+  def edit_post(post_record, fields)
+    put "/posts/#{post_record.id}.json", params: { post: { raw: post_record.reload.raw }.merge(fields) }
+  end
+
   def topic_ids
     expect(response.status).to eq(200), response.body
     response.parsed_body.fetch("topic_list").fetch("topics").map { |topic| topic.fetch("id") }
@@ -156,15 +160,15 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
   it "lets the author revise price and home visibility through native post editing" do
     submit
     first = created_post
-    put "/posts/#{first.id}.json", params: { post: { isbf_marketplace_price: "0.01", isbf_marketplace_home: "true" } }
+    edit_post(first, isbf_marketplace_price: "0.01", isbf_marketplace_home: "true")
     expect(response.status).to eq(200), response.body
     expect(first.topic.reload.custom_fields).to include(IsbfMarketplace::PRICE_FIELD => 1, IsbfMarketplace::HOME_FIELD => true)
     get "/latest.json"
     expect(topic_ids).to include(first.topic_id)
-    put "/posts/#{first.id}.json", params: { post: { raw: "Updated details: available tomorrow for campus pickup." } }
+    edit_post(first, raw: "Updated details: available tomorrow for campus pickup.")
     expect(response.status).to eq(200), response.body
     expect(first.topic.reload.custom_fields[IsbfMarketplace::PRICE_FIELD]).to eq(1)
-    put "/posts/#{first.id}.json", params: { post: { isbf_marketplace_home: "false" } }
+    edit_post(first, isbf_marketplace_home: "false")
     expect(response.status).to eq(200), response.body
     get "/latest.json"
     expect(topic_ids).not_to include(first.topic_id)
@@ -174,11 +178,11 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     submit
     first = created_post
     sign_in(other_member)
-    put "/posts/#{first.id}.json", params: { post: { isbf_marketplace_price: "99" } }
+    edit_post(first, isbf_marketplace_price: "99")
     expect(response.status).to eq(403), response.body
     expect(first.topic.reload.custom_fields[IsbfMarketplace::PRICE_FIELD]).to eq(1234)
     sign_in(admin)
-    put "/posts/#{first.id}.json", params: { post: { isbf_marketplace_price: "20" } }
+    edit_post(first, isbf_marketplace_price: "20")
     expect(response.status).to eq(200), response.body
     expect(first.topic.reload.custom_fields[IsbfMarketplace::PRICE_FIELD]).to eq(2000)
   end
@@ -187,13 +191,13 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     id = private_image
     submit(isbf_marketplace_images: [id].to_json)
     first = created_post
-    put "/posts/#{first.id}.json", params: { post: { isbf_marketplace_images: [id].to_json, isbf_marketplace_price: "10" } }
+    edit_post(first, isbf_marketplace_images: [id].to_json, isbf_marketplace_price: "10")
     expect(response.status).to eq(200), response.body
     submit(isbf_marketplace_images: [id].to_json)
     expect(response.status).to eq(422), response.body
     submit
     second = created_post
-    put "/posts/#{second.id}.json", params: { post: { isbf_marketplace_images: [id].to_json } }
+    edit_post(second, isbf_marketplace_images: [id].to_json)
     expect([403, 422]).to include(response.status)
     expect(IsbfMarketplace::Images.metadata(id)[:topic_id]).to eq(first.topic_id)
     expect(second.topic.reload.custom_fields[IsbfMarketplace::IMAGES_FIELD]).to eq([])
