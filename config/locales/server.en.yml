@@ -1,0 +1,10 @@
+en:
+  site_settings:
+    isbf_marketplace_enabled: "Enable the ISBF marketplace."
+    isbf_marketplace_publishing_enabled: "Allow new marketplace products and image uploads."
+    isbf_marketplace_category_id: "Actual native products category ID (members only)."
+    isbf_marketplace_storage_limit_mb: "Private marketplace image capacity, including thumbnails (MiB)."
+  isbf_marketplace:
+    invalid_price: "Enter a nonnegative RMB price with at most two decimal places."
+    private_images_only: "Product images must use the private marketplace uploader."
+    invalid: "The product is invalid or you do not have permission to publish it."
