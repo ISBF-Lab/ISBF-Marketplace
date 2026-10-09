@@ -13,7 +13,7 @@ jobs:
     uses: discourse/.github/.github/workflows/discourse-plugin.yml@main
     with:
       name: isbf-marketplace
-      core_ref: 10004ccf5090d85f80da529aeb4ecb4f3b7b1205
+      core_ref: 2b7d4b0063543e910fd0cdc3d6c94d9347085f49
       skip_linting: true
       skip_annotations: true
   syntax:
