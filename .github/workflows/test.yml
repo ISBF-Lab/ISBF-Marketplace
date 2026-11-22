@@ -16,6 +16,7 @@ jobs:
       core_ref: 2b7d4b0063543e910fd0cdc3d6c94d9347085f49
       skip_linting: true
       skip_annotations: true
+      container: discourse/discourse_test@sha256:94eca5318fed6171264b95204914de76a113c305cebb72d9fa9527e2c4496494
   syntax:
     runs-on: ubuntu-latest
     steps:

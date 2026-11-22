@@ -219,8 +219,12 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     sign_in(member)
 
     maintenance = Module.new do
+      def self.paused?(key)
+        key.to_s == "marketplace"
+      end
+
       def self.ensure_available!(key)
-        raise Discourse::NotFound if key == :marketplace
+        raise Discourse::NotFound if paused?(key)
       end
     end
     stub_const(Object, :IsbfWorkbenchMaintenance, maintenance) do
