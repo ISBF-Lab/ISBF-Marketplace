@@ -22,6 +22,7 @@ after_initialize do
     add_permitted_post_create_param(field.to_sym, :string)
     NewPostManager.add_plugin_payload_attribute(field.to_sym)
     add_permitted_post_update_param(field.to_sym) do |post, value|
+      IsbfMarketplace.ensure_workbench_available! unless value.nil?
       if !value.nil? && (!post.is_first_post? || !IsbfMarketplace.product?(post.topic))
         raise Discourse::InvalidParameters.new("isbf_marketplace")
       end
@@ -56,7 +57,10 @@ after_initialize do
     product = manager.args[:category].to_i == IsbfMarketplace.category_id && manager.args[:topic_id].blank?
     next unless product || IsbfMarketplace.supplied?(manager.args)
     begin
-      raise Discourse::InvalidParameters.new("isbf_marketplace") unless product
+      unless product
+        IsbfMarketplace.ensure_workbench_available!
+        raise Discourse::InvalidParameters.new("isbf_marketplace")
+      end
       IsbfMarketplace.validate_payload!(manager.user, manager.args)
       nil # Continue the native rules; marketplace products do not force review.
     rescue Discourse::InvalidParameters, Discourse::InvalidAccess
@@ -107,6 +111,7 @@ after_initialize do
         }
         IsbfMarketplace.validate_payload!(editor, payload, topic: topic)
       elsif IsbfMarketplace.supplied?(fields) || (fields[:category_id].to_i == IsbfMarketplace.category_id && @post.is_first_post?)
+        IsbfMarketplace.ensure_workbench_available!
         raise Discourse::InvalidParameters.new("isbf_marketplace")
       end
       PluginStoreRow.transaction do
