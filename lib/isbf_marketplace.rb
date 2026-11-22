@@ -12,6 +12,10 @@ module IsbfMarketplace
   MAX_PRICE_CENTS = 999_999_999_999
   class StorageError < StandardError; end
 
+  def self.ensure_workbench_available!
+    ::IsbfWorkbenchMaintenance.ensure_available!(:marketplace) if defined?(::IsbfWorkbenchMaintenance)
+  end
+
   def self.category_id
     id = SiteSetting.isbf_marketplace_category_id.to_i
     id if id.positive? && Category.exists?(id: id)
@@ -61,6 +65,7 @@ module IsbfMarketplace
   end
 
   def self.validate_payload!(user, options, topic: nil, guardian: Guardian.new(user), reviewed: false)
+    ensure_workbench_available!
     if topic
       raise Discourse::InvalidAccess unless guardian.can_edit_post?(topic.first_post)
     elsif !reviewed
@@ -149,6 +154,7 @@ module IsbfMarketplace
   end
 
   def self.filter(topics, values, guardian)
+    ensure_workbench_available!
     return topics.none unless SiteSetting.isbf_marketplace_enabled && guardian.user && values == ["all"] && category_id
     topics.where(category_id: category_id).where(<<~SQL, PRICE_FIELD)
       EXISTS (SELECT 1 FROM topic_custom_fields AS marketplace_price

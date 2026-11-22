@@ -213,6 +213,48 @@ RSpec.describe "ISBF marketplace native integration", type: :request do
     end
   end
 
+  it "pauses the workbench gallery, product writes and protected images" do
+    topic = make_product
+    id = private_image
+    sign_in(member)
+
+    maintenance = Module.new do
+      def self.paused?(key)
+        key.to_s == "marketplace"
+      end
+
+      def self.ensure_available!(key)
+        raise Discourse::NotFound if paused?(key)
+      end
+    end
+    stub_const(Object, :IsbfWorkbenchMaintenance, maintenance) do
+      get "/isbf/marketplace", headers: { "HTTP_ACCEPT" => "text/html" }
+      expect(response.status).to eq(404)
+      get "/filter.json", params: { q: "isbf-marketplace:all order:created" }
+      expect(response.status).to eq(404)
+      post "/isbf/marketplace/uploads.json"
+      expect(response.status).to eq(404)
+      ["/isbf/marketplace/images/#{id}", "/isbf/marketplace/images/#{id}/thumbnail"].each do |path|
+        get path
+        expect(response.status).to eq(404)
+      end
+      expect { submit }.not_to change(Topic, :count)
+      expect(response.status).to eq(404)
+      edit_post(topic.first_post, isbf_marketplace_price: "22.34")
+      expect(response.status).to eq(404)
+
+      get "/t/#{topic.id}.json"
+      expect(response.status).to eq(200)
+    end
+
+    get "/filter.json", params: { q: "isbf-marketplace:all order:created" }
+    expect(topic_ids).to include(topic.id)
+    get "/isbf/marketplace/images/#{id}"
+    expect(response.status).to eq(200)
+    submit
+    expect(response.status).to eq(200)
+  end
+
   it "does not expose the marketplace gallery to guests" do
     make_product
     get "/filter.json", params: { q: "isbf-marketplace:all order:created" }

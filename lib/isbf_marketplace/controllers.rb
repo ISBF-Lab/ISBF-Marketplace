@@ -11,6 +11,7 @@ module IsbfMarketplace
     requires_login
     requires_plugin "isbf-marketplace"
     skip_before_action :check_xhr, only: :image
+    prepend_before_action { IsbfMarketplace.ensure_workbench_available! }
 
     def page
       category = Category.find_by(id: IsbfMarketplace.category_id)
